@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Xacinthian Workshop</title>
+<meta name="description" content="Xacinthian Workshop is a one-person studio building systems-first games. Its first title, Nightfall — a turn-based tactical RPG and living guild sim — is in private alpha for Windows and Linux.">
+<meta property="og:title" content="Xacinthian Workshop — Nightfall">
+<meta property="og:description" content="A one-person studio building worlds with lives of their own. Nightfall is in private alpha.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0E1219">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230E1219'/><circle cx='15' cy='16' r='9' fill='%23E7A46A'/><circle cx='19.5' cy='14' r='8' fill='%230E1219'/></svg>">
+<style>
+  :root {
+    /* NIGHTFALL — western slate at dusk, a dawn edge to the east (dark default) */
+    --ground:   #0E1219;
+    --ground-2: #151C26;
+    --ground-3: #1A2230;
+    --ink:      #E6EAF0;
+    --ink-soft: #9BA7B6;
+    --ink-faint:#66717F;
+    --gilt:     #E7A46A;
+    --gilt-bright:#F3BE88;
+    --steel:    #82B8DA;
+    --ember:    #DD6A4A;
+    --rule:     rgba(231,164,106,0.24);
+    --rule-soft:rgba(230,234,240,0.10);
+    --card-shadow: 0 1px 0 rgba(255,255,255,0.03) inset, 0 18px 40px -24px rgba(0,0,0,0.82);
+    --seal-fill: rgba(231,164,106,0.10);
+
+    --font-display: "Iowan Old Style","Palatino Linotype","Palatino","Book Antiqua",Georgia,"Times New Roman",serif;
+    --font-body: ui-sans-serif,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --font-mono: ui-monospace,"Cascadia Code","SF Mono","Consolas","Liberation Mono",monospace;
+
+    --measure: 66ch;
+    --pad: clamp(1.15rem, 4vw, 2.75rem);
+    --maxw: 1080px;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root {
+      /* THE EASTERN LIGHT — cool slate-blue morning, dawn accent (light) */
+      --ground:   #E4E7EC;
+      --ground-2: #EBEEF3;
+      --ground-3: #F8FAFC;
+      --ink:      #161B22;
+      --ink-soft: #48525F;
+      --ink-faint:#78828F;
+      --gilt:     #A85E22;
+      --gilt-bright:#C27B37;
+      --steel:    #2A6588;
+      --ember:    #AE3B22;
+      --rule:     rgba(168,94,34,0.30);
+      --rule-soft:rgba(22,27,34,0.13);
+      --card-shadow: 0 1px 0 rgba(255,255,255,0.7) inset, 0 16px 34px -26px rgba(20,28,40,0.5);
+      --seal-fill: rgba(168,94,34,0.08);
+    }
+  }
+
+  /* Viewer toggle wins in both directions */
+  :root[data-theme="dark"] {
+    --ground:#0E1219; --ground-2:#151C26; --ground-3:#1A2230;
+    --ink:#E6EAF0; --ink-soft:#9BA7B6; --ink-faint:#66717F;
+    --gilt:#E7A46A; --gilt-bright:#F3BE88; --steel:#82B8DA; --ember:#DD6A4A;
+    --rule:rgba(231,164,106,0.24); --rule-soft:rgba(230,234,240,0.10);
+    --card-shadow: 0 1px 0 rgba(255,255,255,0.03) inset, 0 18px 40px -24px rgba(0,0,0,0.82);
+    --seal-fill: rgba(231,164,106,0.10);
+  }
+  :root[data-theme="light"] {
+    --ground:#E4E7EC; --ground-2:#EBEEF3; --ground-3:#F8FAFC;
+    --ink:#161B22; --ink-soft:#48525F; --ink-faint:#78828F;
+    --gilt:#A85E22; --gilt-bright:#C27B37; --steel:#2A6588; --ember:#AE3B22;
+    --rule:rgba(168,94,34,0.30); --rule-soft:rgba(22,27,34,0.13);
+    --card-shadow: 0 1px 0 rgba(255,255,255,0.7) inset, 0 16px 34px -26px rgba(20,28,40,0.5);
+    --seal-fill: rgba(168,94,34,0.08);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding-inline: var(--pad); }
+
+  /* ---------- document chrome ---------- */
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--gilt);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6em;
+    margin: 0;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 1.6em; height: 1px;
+    background: var(--gilt);
+    opacity: 0.7;
+  }
+  .eyebrow.plain::before { display: none; }
+
+  h1,h2,h3 { font-family: var(--font-display); font-weight: 600; text-wrap: balance; margin: 0; }
+  .lead { font-family: var(--font-display); font-size: clamp(1.15rem,2.4vw,1.4rem); line-height: 1.5; color: var(--ink); max-width: var(--measure); }
+  p { max-width: var(--measure); }
+
+  a { color: var(--steel); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--gilt);
+    outline-offset: 3px;
+    border-radius: 1px;
+  }
+
+  /* ---------- masthead / nav ---------- */
+  header.masthead {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--ground) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .masthead .wrap { display: flex; align-items: center; gap: 1.25rem; height: 62px; }
+  .brand { display: inline-flex; align-items: center; gap: 0.65rem; cursor: pointer; background: none; border: 0; padding: 0; color: inherit; }
+  .brand .seal { width: 26px; height: 26px; flex: none; }
+  .brand .name { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink); white-space: nowrap; }
+  .brand .name b { color: var(--gilt); font-weight: 600; }
+  nav.top { margin-left: auto; display: flex; align-items: center; gap: 0.3rem; }
+  nav.top button.navlink {
+    font-family: var(--font-mono);
+    font-size: 0.7rem; letter-spacing: 0.16em; text-transform: uppercase;
+    background: none; border: 0; color: var(--ink-soft); cursor: pointer;
+    padding: 0.5rem 0.7rem; border-radius: 2px;
+    position: relative;
+  }
+  nav.top button.navlink:hover { color: var(--ink); }
+  nav.top button.navlink[aria-current="page"] { color: var(--gilt); }
+  nav.top button.navlink[aria-current="page"]::after {
+    content:""; position:absolute; left:0.7rem; right:0.7rem; bottom:0.32rem; height:1px; background: var(--gilt);
+  }
+  .themebtn {
+    font-family: var(--font-mono); font-size: 0.72rem;
+    background: none; border: 1px solid var(--rule); color: var(--ink-soft);
+    width: 30px; height: 30px; border-radius: 2px; cursor: pointer; line-height: 1;
+    display: inline-grid; place-items: center; margin-left: 0.35rem;
+  }
+  .themebtn:hover { color: var(--gilt); border-color: var(--gilt); }
+
+  /* ---------- views ---------- */
+  .view { display: none; }
+  .view.active { display: block; animation: rise 0.5s ease both; }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .view.active { animation: none; } }
+
+  section { padding-block: clamp(3rem, 8vw, 5.5rem); border-top: 1px solid var(--rule-soft); }
+  section:first-of-type { border-top: 0; }
+
+  /* ---------- hero (nightfall) ---------- */
+  .hero { position: relative; overflow: hidden; border-top: 0; }
+  .hero canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.55; }
+  .hero .wrap { position: relative; z-index: 1; }
+  .hero-inner { padding-block: clamp(3.5rem, 9vw, 7rem); }
+
+  .wordmark {
+    font-family: var(--font-mono);
+    color: var(--gilt);
+    font-size: clamp(1.25rem, 6.2vw, 4rem);
+    letter-spacing: 0.04em;
+    line-height: 1.05;
+    margin: 0.6rem 0 0;
+    text-shadow: 0 0 34px color-mix(in srgb, var(--gilt) 30%, transparent);
+    white-space: nowrap;
+    max-width: 100%;
+  }
+  .wordmark .bar { opacity: 0.5; }
+  .subtitle { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.32em; text-transform: uppercase; color: var(--ink-faint); margin: 0.5rem 0 0; }
+
+  .tagline { font-family: var(--font-display); font-size: clamp(1.5rem, 3.4vw, 2.15rem); line-height: 1.28; margin: 1.6rem 0 0; max-width: 20ch; color: var(--ink); }
+
+  .cta-row { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-top: 2rem; align-items: center; }
+
+  .btn {
+    font-family: var(--font-mono);
+    font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase;
+    display: inline-flex; align-items: center; gap: 0.6em;
+    padding: 0.9rem 1.35rem; border-radius: 2px;
+    cursor: pointer; border: 1px solid transparent; text-decoration: none;
+    transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary { background: var(--gilt); color: #14100A; border-color: var(--gilt); font-weight: 600; }
+  .btn-primary:hover { background: var(--gilt-bright); border-color: var(--gilt-bright); }
+  .btn-ghost { background: transparent; color: var(--ink); border-color: var(--rule); }
+  .btn-ghost:hover { border-color: var(--gilt); color: var(--gilt); }
+
+  /* ---------- data strip ---------- */
+  .facts { display: flex; flex-wrap: wrap; gap: 0 2.5rem; margin-top: 2.6rem; padding-top: 1.4rem; border-top: 1px solid var(--rule); }
+  .fact { display: flex; flex-direction: column; gap: 0.25rem; padding: 0.3rem 0; }
+  .fact dt { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-faint); }
+  .fact dd { margin: 0; font-family: var(--font-mono); font-size: 0.86rem; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .fact dd.live { color: var(--steel); }
+
+  /* ---------- section heads ---------- */
+  .sec-head { display: flex; flex-direction: column; gap: 0.9rem; margin-bottom: 2.6rem; }
+  .sec-head h2 { font-size: clamp(1.6rem, 3.6vw, 2.35rem); }
+  .sec-head p { color: var(--ink-soft); margin: 0; }
+
+  /* ---------- provisions grid ---------- */
+  .provisions { display: grid; grid-template-columns: repeat(auto-fill, minmax(272px, 1fr)); gap: 1px; background: var(--rule-soft); border: 1px solid var(--rule-soft); border-radius: 3px; overflow: hidden; }
+  .prov { background: var(--ground); padding: 1.5rem 1.5rem 1.7rem; display: flex; flex-direction: column; gap: 0.6rem; transition: background 0.2s ease; }
+  .prov:hover { background: var(--ground-2); }
+  .prov .pv-eyebrow { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gilt); }
+  .prov h3 { font-size: 1.18rem; line-height: 1.25; }
+  .prov p { font-size: 0.92rem; color: var(--ink-soft); margin: 0; max-width: none; }
+
+  /* ---------- requisition / download ---------- */
+  .req-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: clamp(1.5rem, 4vw, 3rem); align-items: start; }
+  @media (max-width: 760px) { .req-grid { grid-template-columns: 1fr; } }
+
+  .panel { background: var(--ground-3); border: 1px solid var(--rule); border-radius: 3px; padding: clamp(1.4rem, 3vw, 2rem); box-shadow: var(--card-shadow); }
+  .panel .price { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); margin: 0 0 0.4rem; }
+  .panel h3 { font-size: 1.5rem; margin-bottom: 0.9rem; }
+  .dl-meta { font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-soft); margin: 1rem 0 0; display: flex; flex-wrap: wrap; gap: 0.35rem 1.1rem; }
+  .dl-meta span { display: inline-flex; gap: 0.45em; }
+  .dl-meta b { color: var(--ink); font-weight: 600; }
+
+  .callout { border-left: 2px solid var(--ember); background: color-mix(in srgb, var(--ember) 8%, transparent); padding: 0.95rem 1.1rem; border-radius: 0 3px 3px 0; margin-top: 1.4rem; }
+  .callout .tag { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ember); display: block; margin-bottom: 0.35rem; }
+  .callout p { font-size: 0.9rem; margin: 0; color: var(--ink); }
+
+  ol.steps { counter-reset: s; list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1rem; }
+  ol.steps li { counter-increment: s; display: grid; grid-template-columns: 1.9rem 1fr; gap: 0.85rem; align-items: start; }
+  ol.steps li::before { content: counter(s,decimal-leading-zero); font-family: var(--font-mono); font-size: 0.78rem; color: var(--gilt); border: 1px solid var(--rule); border-radius: 2px; height: 1.9rem; display: grid; place-items: center; font-variant-numeric: tabular-nums; }
+  ol.steps li .st { font-size: 0.94rem; }
+  ol.steps li .st b { color: var(--ink); }
+  ol.steps code { font-family: var(--font-mono); font-size: 0.86em; background: var(--ground-2); border: 1px solid var(--rule-soft); padding: 0.05em 0.4em; border-radius: 2px; color: var(--gilt); }
+
+  .spec-scroll { overflow-x: auto; margin-top: 1.2rem; border: 1px solid var(--rule-soft); border-radius: 3px; }
+  table.spec { border-collapse: collapse; width: 100%; font-family: var(--font-mono); font-size: 0.8rem; }
+  table.spec th, table.spec td { text-align: left; padding: 0.7rem 1rem; border-bottom: 1px solid var(--rule-soft); white-space: nowrap; }
+  table.spec th { color: var(--ink-faint); font-weight: 400; letter-spacing: 0.1em; text-transform: uppercase; font-size: 0.66rem; width: 34%; }
+  table.spec td { color: var(--ink); }
+  table.spec tr:last-child th, table.spec tr:last-child td { border-bottom: 0; }
+
+  /* ---------- studio ---------- */
+  .studio-hero { padding-block: clamp(3.5rem, 9vw, 6.5rem); }
+  .studio-hero h1 { font-size: clamp(2.4rem, 6vw, 4rem); line-height: 1.02; margin: 1.3rem 0 0; letter-spacing: -0.01em; }
+  .studio-hero .register { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); margin-top: 1.5rem; display: flex; flex-wrap: wrap; gap: 0.4rem 1.4rem; }
+  .studio-hero .register span::before { content: "· "; color: var(--gilt); }
+  .prose p + p { margin-top: 1.1rem; }
+  .prose p { color: var(--ink-soft); }
+  .prose .lead { color: var(--ink); }
+
+  .works { display: grid; gap: 1rem; }
+  .work {
+    display: grid; grid-template-columns: auto 1fr auto; gap: 1.25rem; align-items: center;
+    background: var(--ground-3); border: 1px solid var(--rule); border-radius: 3px;
+    padding: 1.4rem 1.5rem; text-align: left; cursor: pointer; color: inherit; width: 100%;
+    box-shadow: var(--card-shadow); transition: border-color 0.18s ease, transform 0.18s ease;
+    font-family: inherit;
+  }
+  .work:hover { border-color: var(--gilt); transform: translateY(-2px); }
+  .work .wk-seal { width: 44px; height: 44px; }
+  .work .wk-body { min-width: 0; }
+  .work .wk-title { font-family: var(--font-display); font-size: 1.4rem; color: var(--ink); }
+  .work .wk-sub { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.1em; color: var(--ink-soft); margin-top: 0.2rem; }
+  .work .wk-arrow { font-family: var(--font-mono); color: var(--gilt); font-size: 0.85rem; letter-spacing: 0.1em; white-space: nowrap; }
+  .pill { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--steel); border: 1px solid color-mix(in srgb, var(--steel) 45%, transparent); border-radius: 999px; padding: 0.22em 0.7em; display: inline-block; }
+
+  /* ---------- bug report ---------- */
+  .bug-grid { display: grid; grid-template-columns: 0.82fr 1.18fr; gap: clamp(1.5rem, 4vw, 3rem); align-items: start; }
+  @media (max-width: 760px) { .bug-grid { grid-template-columns: 1fr; } }
+  ul.bug-fields { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.9rem; }
+  ul.bug-fields li { display: grid; grid-template-columns: 5.4rem 1fr; gap: 0.8rem; align-items: baseline; }
+  ul.bug-fields .k { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gilt); }
+  ul.bug-fields .v { font-size: 0.9rem; color: var(--ink-soft); }
+  .report-card { background: var(--ground-2); border: 1px solid var(--rule); border-radius: 3px; padding: clamp(1.2rem, 3vw, 1.7rem); box-shadow: var(--card-shadow); }
+  .report-card .rc-head { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.4rem 1rem; border-bottom: 1px solid var(--rule-soft); padding-bottom: 0.75rem; margin-bottom: 0.9rem; }
+  .report-card .rc-title { font-family: var(--font-display); font-size: 1.1rem; color: var(--ink); }
+  .report-card .rc-badge { font-family: var(--font-mono); font-size: 0.64rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ember); align-self: center; white-space: nowrap; }
+  .report-card dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 0.5rem 1.1rem; font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.55; }
+  .report-card dt { color: var(--ink-faint); letter-spacing: 0.06em; text-transform: uppercase; font-size: 0.66rem; padding-top: 0.15rem; }
+  .report-card dd { margin: 0; color: var(--ink); }
+
+  /* ---------- footer ---------- */
+  footer { border-top: 1px solid var(--rule); padding-block: 2.6rem; }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 1rem 2rem; align-items: center; justify-content: space-between; }
+  footer .fnote { font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em; color: var(--ink-faint); }
+  footer .fnote b { color: var(--gilt); font-weight: 600; }
+  footer .fseal { display: inline-flex; align-items: center; gap: 0.6rem; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.02em; color: var(--ink-soft); text-decoration: none; transition: color 0.15s ease; }
+  footer .fseal:hover { color: var(--gilt); }
+  footer .fseal svg { width: 22px; height: 22px; }
+
+  .anchor-offset { scroll-margin-top: 80px; }
+
+  @media (max-width: 620px) {
+    .brand .name span.long { display: none; }
+    nav.top button.navlink { padding: 0.5rem 0.5rem; }
+    .facts { gap: 0 1.6rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ========================= MASTHEAD ========================= -->
+<header class="masthead">
+  <div class="wrap">
+    <button class="brand" data-nav="studio" aria-label="Xacinthian Workshop — home">
+      <svg class="seal" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+        <circle cx="24" cy="24" r="22" stroke="var(--gilt)" stroke-width="1.4" opacity="0.85"/>
+        <circle cx="24" cy="24" r="17.5" stroke="var(--gilt)" stroke-width="0.8" opacity="0.45"/>
+        <path d="M24 7 a17 17 0 1 0 0.01 0 Z M24 7 a11.5 17 0 0 1 0 34 a17 17 0 0 1 0 -34 Z" fill="var(--seal-fill)"/>
+        <path d="M16 16 L32 32 M32 16 L16 32" stroke="var(--gilt)" stroke-width="1.5"/>
+      </svg>
+      <span class="name"><b>XACINTHIAN</b><span class="long">&nbsp;WORKSHOP</span></span>
+    </button>
+    <nav class="top" aria-label="Primary">
+      <button class="navlink" data-nav="studio">The Workshop</button>
+      <button class="navlink" data-nav="nightfall">Nightfall</button>
+      <button class="themebtn" id="themeToggle" aria-label="Toggle light / dark" title="Toggle theme">◑</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+<!-- ========================= STUDIO VIEW ========================= -->
+<div class="view" id="view-studio">
+  <section class="studio-hero">
+    <div class="wrap">
+      <p class="eyebrow">Xacinthian Workshop — Est. MMXXV</p>
+      <h1>Building worlds with lives&nbsp;of their own.</h1>
+      <div class="register" aria-label="Studio at a glance">
+        <span>Solo studio</span><span>Systems-first design</span><span>One title in private alpha</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap prose">
+      <p class="eyebrow">The Workshop</p>
+      <p class="lead" style="margin-top:1.1rem;">Xacinthian Workshop is a one-person studio making systems-first games: living worlds that run whether or not you're watching, with economies, rival powers, and wilds all pursuing ends of their own.</p>
+      <p>The design begins with how a world works, not how it looks. Economies that don't mint free gold. Factions that pursue their own ends. Wilderness that breeds, settles, and fortifies into something you'll be tasked with removing — if you can. The player is one actor inside a world already in motion, not its center.</p>
+      <p>The first title, <b style="color:var(--ink)">Nightfall</b>, is in private alpha now.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Works</p>
+        <h2>The Catalog</h2>
+      </div>
+      <div class="works">
+        <button class="work" data-nav="nightfall" aria-label="Open the Nightfall page">
+          <svg class="wk-seal" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+            <circle cx="24" cy="24" r="21.5" stroke="var(--gilt)" stroke-width="1.2"/>
+            <path d="M24 5 a19 19 0 1 0 0.01 0 Z" fill="none"/>
+            <path d="M35 15 a15 19 0 0 1 0 18 a19 19 0 0 0 0 -18 Z" fill="var(--gilt)" opacity="0.9"/>
+            <path d="M24 5 a19 19 0 0 0 0 38" stroke="var(--gilt)" stroke-width="1.4" fill="none"/>
+          </svg>
+          <span class="wk-body">
+            <span class="wk-title">Nightfall</span>
+            <span class="wk-sub">Turn-based tactical RPG · living guild &amp; economy sim · Windows</span>
+            <div style="margin-top:0.55rem;"><span class="pill">Private Alpha 1.0</span></div>
+          </span>
+          <span class="wk-arrow">Enter Nightfall →</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+
+</div>
+
+<!-- ========================= NIGHTFALL VIEW ========================= -->
+<div class="view" id="view-nightfall">
+  <section class="hero">
+    <canvas id="emberfield" aria-hidden="true"></canvas>
+    <div class="wrap">
+      <div class="hero-inner">
+        <p class="eyebrow plain">A game by Xacinthian Workshop · Private Alpha 1.0</p>
+        <div class="wordmark" role="heading" aria-level="1" aria-label="Nightfall"><span class="bar">═══</span>&nbsp;NIGHTFALL&nbsp;<span class="bar">═══</span></div>
+        <p class="subtitle">The world of Aureth · A new charter is signed</p>
+        <p class="tagline">Run an adventurer's guild. Fight on the grid. Outlast a living economy.</p>
+        <p class="lead" style="margin-top:1.5rem;">You sign the charter for Nightfall, a fledgling adventurer's guild, and build the guildhall from the ground up. Recruit, forge, explore and delve to grow your vanguard toward immortality. Deploy them into grid-based tactical battles inside a world in constant motion: rival guilds trade and bid for the same contracts, a strict zero-sum economy makes every coin real, and a wilderness ecosystem advances patrolling packs of monsters into Monster Kings that settle and fortify their domains until someone is paid to remove them.</p>
+        <div class="cta-row">
+          <a class="btn btn-primary" id="heroDownload" href="#requisition">Get the Alpha 1.0 build</a>
+          <a class="btn btn-ghost" href="#requisition">Install notes ↓</a>
+        </div>
+        <dl class="facts">
+          <div class="fact"><dt>Genre</dt><dd>Tactical RPG · Guild sim</dd></div>
+          <div class="fact"><dt>Players</dt><dd>Single-player</dd></div>
+          <div class="fact"><dt>Platform</dt><dd>Windows &amp; Linux (64-bit)</dd></div>
+          <div class="fact"><dt>Build</dt><dd class="live">Alpha 1.0 · v1.0.0-alpha.1</dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">The Systems</p>
+        <h2>Ten moving parts, all running at once.</h2>
+        <p>Nightfall is two games welded together — a tactical battler and a self-running world simulation. These are the pieces that are live in the alpha.</p>
+      </div>
+      <div class="provisions">
+        <article class="prov"><span class="pv-eyebrow">The Tick-Clock</span><h3>Everyone at their own speed</h3><p>No fixed rounds. Every combatant advances on its own speed — the quick act more often than the slow — and each turn spends action points, from swift stances to weapon skills to heavy spells.</p></article>
+        <article class="prov"><span class="pv-eyebrow">The Grid</span><h3>Position is everything</h3><p>Melee hits the front of a column, ranged the back, artillery arcs over the line. Encounters can strike from two or three grids at once in pincer and swarm formations.</p></article>
+        <article class="prov"><span class="pv-eyebrow">Reactions</span><h3>Tiles that detonate</h3><p>Fire, cold, poison, static, water and earth hazards plus wards and heals — they stack with their own element, cancel their opposite, and chain-detonate across elements.</p></article>
+        <article class="prov"><span class="pv-eyebrow">The Vessel</span><h3>Growth toward immortality</h3><p>No experience bars. Units pull the mana of the fallen into their vessel to grow; that rising density fortifies the body, or deepens a true understanding of how the universe works — and blunts the toll of age.</p></article>
+        <article class="prov"><span class="pv-eyebrow">The Ledger</span><h3>A zero-sum economy</h3><p>A fixed global gold supply — nothing is minted. Per-province supply and demand move prices week to week under autonomous trade; every quest reward is paid from someone's pocket, not conjured from nothing.</p></article>
+        <article class="prov"><span class="pv-eyebrow">The World</span><h3>It runs without you</h3><p>Rival AI guilds recruit, craft, haul, and bid on their own. A monthly politics tick drives six sovereign nations through succession, embargoes, and a zero-sum war engine.</p></article>
+        <article class="prov"><span class="pv-eyebrow">The Wilderness</span><h3>Monster Kings rise</h3><p>An A-life ecosystem spawns packs that roam, forage, and fortify into apex lairs. A rare few crown a Monster King — an established apex that raids the frontier and strips its resources until a bounty ends it.</p></article>
+        <article class="prov"><span class="pv-eyebrow">The Delve</span><h3>Breach or delegate</h3><p>Fight through the rooms and floors of authored dungeons, or delegate and resolve them statistically. A clear locks the site for a cooldown, and the deeper ruins are owned outright — their delving rights bought and sold on the deed market.</p></article>
+        <article class="prov"><span class="pv-eyebrow">The Workshop</span><h3>Five crafting stations</h3><p>The Forge, Refinery, Cauldron, Scriptorium and Resonance Loom — a tier ladder for metal, hide, vellum and arcane ink. Dismantle the fallen into parts; socket gear with "nodes" and transmute them at the Loom's deterministic bench.</p></article>
+        <article class="prov"><span class="pv-eyebrow">The Registry</span><h3>A guided first hour</h3><p>A seven-step onboarding, delivered as letters from the Sovereign Registry, walks a new guildmaster from the stations tour to a first recruit, first contract, first battle, first breakthrough.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="requisition" class="anchor-offset">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Requisition the Build</p>
+        <h2>Get Alpha 1.0 running.</h2>
+        <p>An invite-only Windows &amp; Linux build. It's a standalone program — no installer, no admin rights.</p>
+      </div>
+      <div class="req-grid">
+        <div class="panel">
+          <p class="price">Private playtest · Windows &amp; Linux (64-bit)</p>
+          <h3>Nightfall — Alpha 1.0</h3>
+          <p style="color:var(--ink-soft);font-size:0.95rem;">The Windows and Linux builds live on itch.io — grab yours there. It's a standalone program: unzip and run, no installer.</p>
+          <div class="cta-row" style="margin-top:1.5rem;">
+            <a class="btn btn-primary" id="mainDownload" href="https://xacinthian-workshop.itch.io/nightfall" target="_blank" rel="noopener">Get it on itch.io</a>
+            <a class="btn btn-ghost" id="altDownload" href="mailto:xacinthianworkshop@gmail.com?subject=Nightfall%20Alpha%201.0%20—%20a%20question">Questions? Email the studio</a>
+          </div>
+          <div class="dl-meta">
+            <span><b>Version</b> v1.0.0-alpha.1</span>
+            <span><b>Size</b> ~40&nbsp;MB (.zip)</span>
+            <span><b>Format</b> Standalone executable</span>
+          </div>
+          <div class="callout">
+            <span class="tag">Unsigned build · Windows SmartScreen</span>
+            <p>This alpha isn't code-signed, so Windows will warn on first launch. That's expected for an indie build — click <b>More info → Run anyway</b>. It never asks for admin rights.</p>
+          </div>
+        </div>
+
+        <div>
+          <p class="eyebrow" style="margin-bottom:1.2rem;">First launch</p>
+          <ol class="steps">
+            <li><span class="st"><b>Unzip</b> the archive anywhere — Desktop is fine. Everything lives in one folder.</span></li>
+            <li><span class="st"><b>Run</b> it — <code>ProjectNightfall.exe</code> on Windows, <code>ProjectNightfall.x86_64</code> on Linux. No install step.</span></li>
+            <li><span class="st"><b>Windows:</b> if SmartScreen warns, choose <b>More info → Run anyway</b> (left). <b>Linux:</b> mark it executable first — <code>chmod +x ProjectNightfall.x86_64</code>.</span></li>
+            <li><span class="st"><b>Begin Campaign</b> from the title screen. The seven-letter Registry onboarding takes it from there.</span></li>
+          </ol>
+
+          <p class="eyebrow" style="margin:2rem 0 0;">Requirements</p>
+          <div class="spec-scroll">
+            <table class="spec">
+              <tbody>
+                <tr><th>OS</th><td>Windows 10 / 11, or a modern 64-bit Linux</td></tr>
+                <tr><th>Graphics</th><td>A modern GPU with Vulkan support</td></tr>
+                <tr><th>Disk</th><td>~300 MB free</td></tr>
+                <tr><th>Input</th><td>Mouse &amp; keyboard</td></tr>
+                <tr><th>Install</th><td>None — portable executable</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="callout" style="border-color:var(--steel);background:color-mix(in srgb, var(--steel) 9%, transparent);max-width:var(--measure);">
+        <span class="tag" style="color:var(--steel);">Alpha dispatch — read me first</span>
+        <p style="margin-bottom:0.6rem;">This is an early build. The playable loop is about two or three sessions, the art is placeholder, and you'll hit rough edges. The deep systems above are real and running, but they're still being tuned — a few screens are half-dressed.</p>
+        <p>What matters most is your read on how it <i>feels</i>, and whether it's fun. Your feedback shapes what comes next.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="feedback" class="anchor-offset">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Feedback</p>
+        <h2>How to report a bug.</h2>
+        <p>A useful report has five parts. The Report a bug button opens an email with them ready to fill in — here's a complete example to match.</p>
+      </div>
+      <div class="bug-grid">
+        <div>
+          <p class="eyebrow" style="margin-bottom:1.2rem;">Five lines that matter</p>
+          <ul class="bug-fields">
+            <li><span class="k">Build</span><span class="v">The version — v1.0.0-alpha.1, stamped under the title on the main menu.</span></li>
+            <li><span class="k">System</span><span class="v">Your Windows version and graphics card.</span></li>
+            <li><span class="k">Happened</span><span class="v">What actually occurred, in one plain sentence.</span></li>
+            <li><span class="k">Expected</span><span class="v">What you thought would happen instead.</span></li>
+            <li><span class="k">Steps</span><span class="v">The shortest path to make it happen again.</span></li>
+          </ul>
+          <div class="cta-row" style="margin-top:1.9rem;">
+            <a class="btn btn-primary" id="bugReport" href="mailto:xacinthianworkshop@gmail.com?subject=Nightfall%20Alpha%201.0%20bug%20report">Report a bug</a>
+          </div>
+        </div>
+        <div>
+          <p class="eyebrow" style="margin-bottom:1.2rem;">A model report</p>
+          <div class="report-card">
+            <div class="rc-head">
+              <span class="rc-title">Market price won't move after a sale</span>
+              <span class="rc-badge">Severity: major</span>
+            </div>
+            <dl>
+              <dt>Build</dt><dd>v1.0.0-alpha.1</dd>
+              <dt>System</dt><dd>Windows 11 · RTX 3060</dd>
+              <dt>Happened</dt><dd>Sold 40 iron ore in Valeroc; the local price stayed frozen at the pre-sale number for the rest of the week.</dd>
+              <dt>Expected</dt><dd>Dumping that much stock should visibly drop the price.</dd>
+              <dt>Steps</dt><dd>1. Guildhall &rarr; Market. 2. Sell 40+ of any good. 3. Advance one week. Price unchanged — every time.</dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span class="fnote">© 2025 <b>Xacinthian Workshop</b></span>
+    <a class="fseal" href="mailto:xacinthianworkshop@gmail.com">
+      <svg viewBox="0 0 48 48" fill="none" aria-hidden="true">
+        <circle cx="24" cy="24" r="21" stroke="var(--gilt)" stroke-width="1.2" opacity="0.8"/>
+        <path d="M17 17 L31 31 M31 17 L17 31" stroke="var(--gilt)" stroke-width="1.3"/>
+      </svg>
+      xacinthianworkshop@gmail.com
+    </a>
+  </div>
+</footer>
+
+<script>
+  "use strict";
+
+  // --- Download ------------------------------------------------------------
+  // The build is distributed from itch.io (xacinthian-workshop.itch.io/nightfall).
+  // The links are wired directly in the download-panel markup (id="mainDownload").
+  // To point somewhere else, just edit that href — no script wiring needed.
+
+  // --- Prefill the bug-report email with the gold-standard template --------
+  (() => {
+    const b = document.getElementById("bugReport");
+    if (!b) return;
+    const subject = "Nightfall Alpha 1.0 — bug report";
+    const body = [
+      "Build: v1.0.0-alpha.1",
+      "System: Windows __ , GPU __",
+      "",
+      "What happened:",
+      "",
+      "What I expected:",
+      "",
+      "Steps to reproduce:",
+      "1. ",
+      "2. ",
+      "",
+      "Severity: blocker / major / minor / cosmetic"
+    ].join("\n");
+    b.href = "mailto:xacinthianworkshop@gmail.com?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+  })();
+
+  // --- Two-view routing ----------------------------------------------------
+  const views = { studio: document.getElementById("view-studio"), nightfall: document.getElementById("view-nightfall") };
+  const navlinks = document.querySelectorAll("[data-nav]");
+
+  function show(name, push) {
+    if (!views[name]) name = "studio";
+    Object.entries(views).forEach(([k, el]) => el.classList.toggle("active", k === name));
+    document.querySelectorAll("nav.top .navlink").forEach(b => {
+      b.toggleAttribute("aria-current", b.getAttribute("data-nav") === name);
+      if (b.getAttribute("data-nav") === name) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
+    });
+    if (push) history.replaceState(null, "", "#" + name);
+    window.scrollTo({ top: 0, behavior: "auto" });
+    document.title = name === "nightfall" ? "Nightfall — Xacinthian Workshop" : "Xacinthian Workshop";
+    startEmbers(name === "nightfall");
+  }
+
+  navlinks.forEach(b => b.addEventListener("click", (e) => {
+    e.preventDefault();
+    show(b.getAttribute("data-nav"), true);
+  }));
+
+  window.addEventListener("hashchange", () => show(location.hash.replace("#", ""), false));
+
+  // --- Theme toggle --------------------------------------------------------
+  const tbtn = document.getElementById("themeToggle");
+  tbtn.addEventListener("click", () => {
+    const cur = document.documentElement.getAttribute("data-theme");
+    const isDark = cur ? cur === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    document.documentElement.setAttribute("data-theme", isDark ? "light" : "dark");
+  });
+
+  // --- Ambient ember field (nightfall hero only) ---------------------------
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const canvas = document.getElementById("emberfield");
+  const ctx = canvas.getContext("2d");
+  let raf = null, motes = [], running = false, W = 0, H = 0;
+
+  function sizeCanvas() {
+    const r = canvas.getBoundingClientRect();
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    W = canvas.width = Math.max(1, Math.floor(r.width * dpr));
+    H = canvas.height = Math.max(1, Math.floor(r.height * dpr));
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    motes = Array.from({ length: Math.round(r.width / 22) }, () => newMote(r.width, r.height, true));
+    cw = r.width; chh = r.height;
+  }
+  let cw = 0, chh = 0;
+  function newMote(w, h, seed) {
+    return {
+      x: Math.random() * w,
+      y: seed ? Math.random() * h : h + 8,
+      r: 0.5 + Math.random() * 1.6,
+      s: 0.08 + Math.random() * 0.35,
+      d: (Math.random() - 0.5) * 0.25,
+      a: 0.12 + Math.random() * 0.5
+    };
+  }
+  function tick() {
+    if (!running) return;
+    ctx.clearRect(0, 0, cw, chh);
+    const gilt = getComputedStyle(document.documentElement).getPropertyValue("--gilt").trim() || "#E6B450";
+    for (const m of motes) {
+      m.y -= m.s; m.x += m.d;
+      if (m.y < -8 || m.x < -8 || m.x > cw + 8) Object.assign(m, newMote(cw, chh, false));
+      ctx.globalAlpha = m.a;
+      ctx.fillStyle = gilt;
+      ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    raf = requestAnimationFrame(tick);
+  }
+  function startEmbers(on) {
+    if (reduce || !on) { running = false; if (raf) cancelAnimationFrame(raf); ctx && ctx.clearRect(0, 0, cw, chh); return; }
+    sizeCanvas(); running = true; if (raf) cancelAnimationFrame(raf); tick();
+  }
+  let rz; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { if (running) sizeCanvas(); }, 160); });
+
+  // --- Boot (after every declaration is initialized) -----------------------
+  show(location.hash.replace("#", "") || "studio", false);
+</script>
+
+</body>
+</html>

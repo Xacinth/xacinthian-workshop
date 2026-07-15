@@ -226,11 +226,16 @@
 
   /* ---------- requisition / download ---------- */
   .req-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: clamp(1.5rem, 4vw, 3rem); align-items: start; }
+  /* Grid tracks floor at their items' min-content, so the nowrap spec table used to
+     push this grid wider than the viewport and get clipped. Let the tracks shrink and
+     the table scrolls inside .spec-scroll as intended. */
+  .req-grid > * { min-width: 0; }
   @media (max-width: 760px) { .req-grid { grid-template-columns: 1fr; } }
 
   .panel { background: var(--ground-3); border: 1px solid var(--rule); border-radius: 3px; padding: clamp(1.4rem, 3vw, 2rem); box-shadow: var(--card-shadow); }
   .panel .price { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); margin: 0 0 0.4rem; }
   .panel h3 { font-size: 1.5rem; margin-bottom: 0.9rem; }
+  .req-fallback { font-family: var(--font-mono); font-size: 0.73rem; line-height: 1.55; color: var(--ink-faint); margin: 1rem 0 0; }
   .dl-meta { font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-soft); margin: 1rem 0 0; display: flex; flex-wrap: wrap; gap: 0.35rem 1.1rem; }
   .dl-meta span { display: inline-flex; gap: 0.45em; }
   .dl-meta b { color: var(--ink); font-weight: 600; }
@@ -395,7 +400,7 @@
         <p class="tagline">Run an adventurer's guild. Fight on the grid. Outlast a living economy.</p>
         <p class="lead" style="margin-top:1.5rem;">You sign the charter for Nightfall, a fledgling adventurer's guild, and build the guildhall from the ground up. Recruit, forge, explore and delve to grow your vanguard toward immortality. Deploy them into grid-based tactical battles inside a world in constant motion: rival guilds trade and bid for the same contracts, a strict zero-sum economy makes every coin real, and a wilderness ecosystem advances patrolling packs of monsters into Monster Kings that settle and fortify their domains until someone is paid to remove them.</p>
         <div class="cta-row">
-          <a class="btn btn-primary" id="heroDownload" href="#requisition">Get the v1.0.1 build</a>
+          <a class="btn btn-primary" id="heroDownload" href="#requisition">Request alpha access</a>
           <a class="btn btn-ghost" href="#requisition">Install notes ↓</a>
         </div>
         <dl class="facts">
@@ -435,17 +440,18 @@
       <div class="sec-head">
         <p class="eyebrow">Requisition the Build</p>
         <h2>Get v1.0.1 running.</h2>
-        <p>An invite-only Windows &amp; Linux build. It's a standalone program — no installer, no admin rights.</p>
+        <p>An invite-only Windows &amp; Linux build. Access is granted per person and holds for the whole alpha — ask once, and every build after it stays open to you. It's a standalone program: no installer, no admin rights.</p>
       </div>
       <div class="req-grid">
         <div class="panel">
           <p class="price">Private playtest · Windows &amp; Linux (64-bit)</p>
           <h3>Nightfall — v1.0.1</h3>
-          <p style="color:var(--ink-soft);font-size:0.95rem;">The Windows and Linux builds live on itch.io — grab yours there. It's a standalone program: unzip and run, no installer.</p>
+          <p style="color:var(--ink-soft);font-size:0.95rem;">The alpha is invite-only. Ask for access and I'll issue you a key of your own — attach it to your itch.io account once, and the Nightfall page stays yours for every build of the alpha.</p>
           <div class="cta-row" style="margin-top:1.5rem;">
-            <a class="btn btn-primary" id="mainDownload" href="https://xacinthian-workshop.itch.io/nightfall" target="_blank" rel="noopener">Get it on itch.io</a>
-            <a class="btn btn-ghost" id="altDownload" href="mailto:xacinthianworkshop@gmail.com?subject=Nightfall%20Alpha%201.0%20—%20a%20question">Questions? Email the studio</a>
+            <a class="btn btn-primary" id="accessRequest" href="mailto:xacinthianworkshop@gmail.com?subject=Nightfall%20Alpha%20playtest%20access%20request">Request playtest access</a>
+            <a class="btn btn-ghost" id="mainDownload" href="https://xacinthian-workshop.itch.io/nightfall" target="_blank" rel="noopener">Already have a key? →</a>
           </div>
+          <p class="req-fallback">No mail app? Write to <a href="mailto:xacinthianworkshop@gmail.com">xacinthianworkshop@gmail.com</a> with your itch.io username and platform.</p>
           <div class="dl-meta">
             <span><b>Version</b> v1.0.1</span>
             <span><b>Size</b> ~40&nbsp;MB (.zip)</span>
@@ -458,7 +464,15 @@
         </div>
 
         <div>
-          <p class="eyebrow" style="margin-bottom:1.2rem;">First launch</p>
+          <p class="eyebrow" style="margin-bottom:1.2rem;">How access works</p>
+          <ol class="steps">
+            <li><span class="st"><b>Ask.</b> The button opens an email with the two things I need: your <b>itch.io username</b> and your platform.</span></li>
+            <li><span class="st"><b>I issue you a key.</b> An itch.io download key, granted by hand — the alpha roster is small and stays that way.</span></li>
+            <li><span class="st"><b>Attach it once.</b> Open the key while signed in to itch.io and it binds to your account. Nothing to keep, nothing to lose.</span></li>
+            <li><span class="st"><b>You're in for the alpha.</b> The Nightfall page stays open to you from then on — each new build appears in the same place. No new link, no asking twice.</span></li>
+          </ol>
+
+          <p class="eyebrow" style="margin:2.2rem 0 1.2rem;">First launch</p>
           <ol class="steps">
             <li><span class="st"><b>Unzip</b> the archive anywhere — Desktop is fine. Everything lives in one folder.</span></li>
             <li><span class="st"><b>Run</b> it — <code>ProjectNightfall.exe</code> on Windows, <code>ProjectNightfall.x86_64</code> on Linux. No install step.</span></li>
@@ -552,10 +566,31 @@
 <script>
   "use strict";
 
-  // --- Download ------------------------------------------------------------
-  // The build is distributed from itch.io (xacinthian-workshop.itch.io/nightfall).
-  // The links are wired directly in the download-panel markup (id="mainDownload").
-  // To point somewhere else, just edit that href — no script wiring needed.
+  // --- Access & download ---------------------------------------------------
+  // The alpha is invite-only: itch.io is set to Restricted, and each tester is
+  // granted a download key that attaches to their itch account, which keeps the
+  // project PAGE open to them for every build of the alpha. itch has no built-in
+  // "request access" flow, so the request arrives here as email (id="accessRequest")
+  // and keys are issued by hand. The itch link (id="mainDownload") is for testers
+  // who already hold a key. To point elsewhere, just edit that href.
+
+  // --- Prefill the access-request email ------------------------------------
+  (() => {
+    const a = document.getElementById("accessRequest");
+    if (!a) return;
+    const subject = "Nightfall Alpha — playtest access request";
+    const body = [
+      "I'd like to join the Nightfall private alpha.",
+      "",
+      "itch.io username: ",
+      "Platform: Windows / Linux",
+      "",
+      "How I found Nightfall: ",
+      "What I usually play: ",
+      ""
+    ].join("\n");
+    a.href = "mailto:xacinthianworkshop@gmail.com?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+  })();
 
   // --- Prefill the bug-report email with the gold-standard template --------
   (() => {
